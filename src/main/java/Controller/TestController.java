@@ -7,6 +7,8 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TestController {
 
@@ -20,6 +22,8 @@ public class TestController {
     public void setEndpoints() {
         server.createContext("/test", this::testHandler);
         server.createContext("/testObject", this::testObjectHandler);
+        server.createContext("/testQuery", this::testQueryParamsHandler);
+        server.createContext("/testPath", this::testPathParamsHandler);
     }
 
     private void testHandler(HttpExchange httpExchange) throws IOException {
@@ -43,4 +47,57 @@ public class TestController {
         }
     }
 
+    private void testQueryParamsHandler(HttpExchange httpExchange) throws IOException {
+        if("GET".equals(httpExchange.getRequestMethod())){
+            String query = httpExchange.getRequestURI().getQuery();
+
+            Map<String,String> queryMap = formatQuery(query);
+
+            String response = queryMap.get("hi") + " " + queryMap.get("boo");
+
+            httpExchange.sendResponseHeaders(200, response.getBytes().length);
+            OutputStream outputStream = httpExchange.getResponseBody();
+            outputStream.write(response.getBytes());
+            outputStream.close();
+        }
+    }
+
+    private void testPathParamsHandler(HttpExchange httpExchange) throws IOException {
+        if("GET".equals(httpExchange.getRequestMethod())){
+            try {
+                String[] pathURI = String.valueOf(httpExchange.getRequestURI()).split("/");
+                String response;
+                if(pathURI.length != 3){
+                    response = "Please add more to the path above";
+                    httpExchange.sendResponseHeaders(400, response.getBytes().length);
+                } else {
+                    response = pathURI[2];
+                    httpExchange.sendResponseHeaders(200, response.getBytes().length);
+                }
+
+                System.out.println("Path Variable is: " + response);
+                OutputStream outputStream = httpExchange.getResponseBody();
+                outputStream.write(response.getBytes());
+                outputStream.close();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public Map<String, String> formatQuery(String query){
+        if(query == null) {
+            return null;
+        }
+        Map<String, String> queryMap = new HashMap<>();
+        for (String param : query.split("&")) {
+            String[] entry = param.split("=");
+            if (entry.length > 1) {
+                queryMap.put(entry[0], entry[1]);
+            }else{
+                queryMap.put(entry[0], "");
+            }
+        }
+        return queryMap;
+    }
 }

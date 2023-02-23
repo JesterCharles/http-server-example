@@ -1,7 +1,7 @@
 package Controller;
 
-import Controller.interfaces.GenericHandlers;
-import Controller.interfaces.SiteUserHandlers;
+import Util.interfaces.handlers.GenericHandlers;
+import Util.interfaces.handlers.SiteUserHandlers;
 import Model.SiteUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -21,17 +21,15 @@ public class SiteUserController extends WebController<SiteUser> implements Gener
         server.createContext("/register", this::createHandler);
     }
 
-    @Override
-    public void findAllHandler() {
-
-    }
 
     private void testSiteUserHandler(HttpExchange httpExchange) throws IOException {
         if("GET".equals(httpExchange.getRequestMethod())){
             SiteUser user = new SiteUser("valid", "valid", "validP", 20);
             String response = mapper.writeValueAsString(user);
+            httpExchange.sendResponseHeaders(200, response.getBytes().length);
             super.responseJSON(httpExchange, response);
         } else {
+            httpExchange.sendResponseHeaders(400, 0);
             super.responseJSON(httpExchange, "Invalid request");
         }
     }
@@ -42,12 +40,17 @@ public class SiteUserController extends WebController<SiteUser> implements Gener
             SiteUser newSiteUser = mapper.readValue(httpExchange.getRequestBody(), SiteUser.class);
             System.out.println(newSiteUser);
             String response = mapper.writeValueAsString(newSiteUser);
+
+            httpExchange.sendResponseHeaders(200, response.getBytes().length);
             super.responseJSON(httpExchange, response);
         } else {
             super.responseJSON(httpExchange, "Invalid request");
         }
     }
+    @Override
+    public void findAllHandler(HttpExchange httpExchange) {
 
+    }
     @Override
     public void findByIDHandler(HttpExchange httpExchange) {
 
@@ -59,12 +62,12 @@ public class SiteUserController extends WebController<SiteUser> implements Gener
     }
 
     @Override
-    public void updateHandler(HttpExchange httpExchange) {
+    public void deleteHandler(HttpExchange httpExchange) {
 
     }
 
     @Override
-    public void deleteHandler() {
+    public void loginHandler(HttpExchange httpExchange) {
 
     }
 }
