@@ -13,6 +13,7 @@ public class Main {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         ObjectMapper mapper = new ObjectMapper();
 
+        // Dependency Injection to provide server & mapper
         new TestController(server, mapper).setEndpoints();
         new SiteUserController(server, mapper).setEndpoints();
 
